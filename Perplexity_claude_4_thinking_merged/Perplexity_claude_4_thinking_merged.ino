@@ -1,3 +1,5 @@
+///### BASE CODE
+
 // ESP32 SMS System with A7670C Module + MQ7 Sensor
 // Sends violation SMS when CO exceeds threshold
 
@@ -23,7 +25,7 @@ float alpha = 0.1; // Smoothing factor for running average
 bool isCalibrated = false;
 float baselineValue = 0.0;
 unsigned long calibrationStartTime = 0;
-const unsigned long CALIBRATION_TIME = 45000; // 45 seconds
+const unsigned long CALIBRATION_TIME = 10000; // 45 seconds
 const float CO_THRESHOLD = 75.0; // ppm threshold
 
 // Timing variables
