@@ -477,14 +477,14 @@ const char* html_page = R"rawliteral(
                 </div>
                 <div class="large-metric">
                     <div class="value" id="coValue">0</div>
-                    <div class="unit">ppm</div>
+                    <div class="unit">mg/km</div>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill progress-normal" id="coProgress" style="width: 0%"></div>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Threshold:</span>
-                    <span class="metric-value">200 ppm</span>
+                    <span class="metric-value">1000 mg/km</span>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Status:</span>
@@ -676,7 +676,7 @@ const char* html_page = R"rawliteral(
 
                 const updateDemo = () => {
                     const demoData = {
-                        coPPM: Math.random() * 150 + 20,
+                        coPPM: Math.random() * 800 + 100,
                         soundDB: Math.random() * 40 + 30,
                         pressCount: Math.floor(Math.random() * 4),
                         totalFine: Math.floor(Math.random() * 500),
@@ -743,7 +743,7 @@ const char* html_page = R"rawliteral(
 
             updateCOData(data) {
                 const coValue = parseFloat(data.coPPM || 0);
-                const threshold = 200;
+                const threshold = 1000;
                 
                 document.getElementById('coValue').textContent = Math.round(coValue);
                 
@@ -817,9 +817,9 @@ const char* html_page = R"rawliteral(
                 let message = '';
                 
                 // Check CO violation
-                if (data.coPPM > 200) {
+                if (data.coPPM > 1000) {
                     hasViolation = true;
-                    message = `CO Violation: ${Math.round(data.coPPM)} ppm detected!`;
+                    message = `CO Violation: ${Math.round(data.coPPM)} mg/km detected!`;
                 }
                 
                 // Check Sound violation
@@ -982,10 +982,11 @@ void sendWebSocketData() {
   
   // Calculate current values
   float coPPM = isCalibrated ? calculateCOPPM(runningAverage) : 0;
+  float coMgKm = coPPM * 5; // Simulate mg/km for display
   int currentSoundDB = (digitalRead(BUTTON) == LOW) ? simulatedSoundDB : ambientSoundDB;
   
   // Populate JSON with current sensor data
-  jsonDoc["coPPM"] = coPPM;
+  jsonDoc["coPPM"] = coMgKm; // Sending simulated mg/km value
   jsonDoc["soundDB"] = currentSoundDB;
   jsonDoc["pressCount"] = pressCount;
   jsonDoc["totalFine"] = totalFine;
@@ -1268,6 +1269,7 @@ void readMQ7Sensor() {
 
   // Calculate CO concentration in ppm
   float coPPM = calculateCOPPM(runningAverage);
+  float coMgKm = coPPM * 5; //Simulated value for display
 
   // Debug output
   Serial.print("Raw: ");
@@ -1278,7 +1280,10 @@ void readMQ7Sensor() {
   Serial.print(runningAverage, 1);
   Serial.print(" | CO: ");
   Serial.print(coPPM, 1);
-  Serial.println(" ppm");
+  Serial.print(" ppm (");
+  Serial.print(coMgKm, 1);
+  Serial.println(" mg/km)");
+
 
   // Check for CO violations
   checkCOViolation(coPPM);
@@ -1453,12 +1458,13 @@ void updateOLEDDisplay() {
       display.setTextSize(1);
       display.setCursor(3, 3);  // Move slightly inside border
       float coPPM = calculateCOPPM(runningAverage);
+      float coMgKm = coPPM * 5; // Simulate mg/km for display
       display.setTextSize(1);  // Keep labels normal
       display.print(F("CO:"));
       display.setTextSize(1);  // Make values bigger
-      display.print(coPPM, 0);
+      display.print(coMgKm, 0);
       display.setTextSize(1);
-      display.print(F(" ppm"));
+      display.print(F(" mg/km"));
       if (coPPM > CO_THRESHOLD) {
         display.print(F("!"));
       }
@@ -1557,12 +1563,15 @@ void SendCOViolationSMS(float coPPM) {
   int additionalSets = (int)(excessPPM / 50.0);  // Number of 50ppm sets
   int variableFine = additionalSets * 300;       // Rs 300 per 50ppm set
   int totalCOFine = baseFine + variableFine;
+  
+  int coMgKm = coPPM * 5; // Simulated mg/km for display
+  int limitMgKm = CO_THRESHOLD * 5; // Simulated mg/km limit for display
 
   coViolationCounter++;
 
   // Create violation message with ACTUAL CO reading
   String SMS = "EMISSION VIOLATION\n";
-  SMS += "CO:" + String(coPPM, 0) + " (Limit:200)\n";  // ACTUAL PPM HERE
+  SMS += "CO:" + String(coMgKm, 0) + " (Limit:" + String(limitMgKm) + ")\n";  // SIMULATED mg/km HERE
   SMS += "Fine: Rs" + String(totalCOFine) + "\n";
   SMS += "ID:#E" + String(coViolationCounter) + "\n";
   SMS += getFormattedDateTime() + "\n"; // Replaced hardcoded date/time
@@ -1572,7 +1581,7 @@ void SendCOViolationSMS(float coPPM) {
   Serial.println("CO Message to send:");
   Serial.println(SMS);
   Serial.println("Length: " + String(SMS.length()) + " chars");
-  Serial.println("Actual CO Level: " + String(coPPM, 1) + " ppm");
+  Serial.println("Actual CO Level: " + String(coMgKm, 1) + " mg/km (internal ppm: " + String(coPPM, 1) + ")");
   Serial.println("Fine Calculation: Rs" + String(baseFine) + " + Rs" + String(variableFine) + " = Rs" + String(totalCOFine));
   Serial.println("------------------------");
 
