@@ -1,5 +1,3 @@
----
-
 # Sonic Guard – Smart SMS-Based Pollution & Noise Traffic Monitor
 
 ## Overview
@@ -142,7 +140,6 @@ If you wish to open source, add a license file (MIT recommended).
 
 Created by [jrc1203](https://github.com/jrc1203)
 
----
 
 **For more details, see the main code:**  
 [final_4.0.ino](https://github.com/jrc1203/sms_pollution/blob/main/final_4.0/final_4.0.
