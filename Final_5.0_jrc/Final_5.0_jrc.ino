@@ -1614,7 +1614,7 @@ void SendSoundViolationSMS(int soundDB, int honkCount, String violationType) {
     // High Decibel Violation Message
     violationFine = highDbCount * 20;
     SMS = "SOUND VIOLATION\n";
-    SMS += "dB:" + String(soundDB) + " (Limit:" + String(SOUND_THRESHOLD) + ")\n";
+    SMS += "Sound Level:" + String(soundDB) + "dB" + " (Limit:" + String(SOUND_THRESHOLD) + " dB)\n";
     SMS += "Fine: Rs" + String(violationFine) + "\n";
     SMS += "ID:#S" + String(soundViolationCounter) + "\n";
     SMS += getFormattedDateTime() + "\n"; // Replaced hardcoded date/time
